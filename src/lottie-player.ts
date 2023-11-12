@@ -59,9 +59,7 @@ export function parseSrc(src: string | object): string | object {
     return JSON.parse(src);
   } catch (e) {
     // Try construct an absolute URL from the src URL
-    const srcUrl: URL = new URL(src, window.location.href);
-
-    return srcUrl.toString();
+      return window ? new URL(src, window.location.href).toString : '';
   }
 }
 
@@ -581,7 +579,7 @@ export class LottiePlayer extends LitElement {
    */
   protected firstUpdated(): void {
     // Add intersection observer for detecting component being out-of-view.
-    if ("IntersectionObserver" in window) {
+    if (window && "IntersectionObserver" in window) {
       this._io = new IntersectionObserver(
         (entries: IntersectionObserverEntry[]) => {
           if (entries[0].isIntersecting) {
@@ -780,20 +778,22 @@ export class LottiePlayer extends LitElement {
           this._counter += 1;
         }
 
-        window.setTimeout(() => {
-          this.dispatchEvent(new CustomEvent(PlayerEvents.Loop));
-
-          if (this.currentState === PlayerState.Playing) {
-            if (this.direction === -1) {
-              // Prevents flickering
-              this.seek("99%");
-              this.play();
-            } else {
-              this._lottie.stop();
-              this._lottie.play();
+        if (window) {
+          window.setTimeout(() => {
+            this.dispatchEvent(new CustomEvent(PlayerEvents.Loop));
+  
+            if (this.currentState === PlayerState.Playing) {
+              if (this.direction === -1) {
+                // Prevents flickering
+                this.seek("99%");
+                this.play();
+              } else {
+                this._lottie.stop();
+                this._lottie.play();
+              }
             }
-          }
-        }, this.intermission);
+          }, this.intermission);
+        }
       }
     });
 
